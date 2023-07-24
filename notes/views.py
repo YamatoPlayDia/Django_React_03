@@ -11,7 +11,6 @@ class NoteViewSet(viewsets.ModelViewSet):
 
     def create(self, request, *args, **kwargs):
         data = request.data.copy()
-        data['created_by'] = request.user.id
         serializer = self.get_serializer(data=data)
         serializer.is_valid(raise_exception=True)
         self.perform_create(serializer)
@@ -29,17 +28,27 @@ class NoteViewSet(viewsets.ModelViewSet):
 
 
 class CommentViewSet(viewsets.ModelViewSet):
-    queryset = Comment.objects.filter(deleted_at=None)
     serializer_class = CommentSerializer
+
+    def get_queryset(self):
+        """
+        Optionally restricts the returned comments to a given note,
+        by filtering against a `note` query parameter in the URL.
+        """
+        queryset = Comment.objects.filter(deleted_at=None)
+        note_id = self.request.query_params.get('note', None)
+        if note_id is not None:
+            queryset = queryset.filter(note=note_id)
+        return queryset
 
     def create(self, request, *args, **kwargs):
         data = request.data.copy()
-        data['created_by'] = request.user.id
         serializer = self.get_serializer(data=data)
         serializer.is_valid(raise_exception=True)
         self.perform_create(serializer)
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
 
     def perform_create(self, serializer):
         serializer.save(created_by=self.request.user)
@@ -48,5 +57,7 @@ class CommentViewSet(viewsets.ModelViewSet):
         comment = self.get_object()
         comment.deleted_at = timezone.now()
         comment.save()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        serializer = self.get_serializer(comment)
+        return Response(serializer.data, status=status.HTTP_204_NO_CONTENT)
+
 

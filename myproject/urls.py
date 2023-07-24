@@ -5,9 +5,11 @@ from notes import views
 
 router = DefaultRouter()
 router.register(r'notes', views.NoteViewSet)
-router.register(r'comments', views.CommentViewSet)
+router.register(r'comments', views.CommentViewSet, basename='comment')
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include(router.urls)),
+    path('dj-rest-auth/', include('dj_rest_auth.urls')),  # 変更
+    path('dj-rest-auth/registration/', include('dj_rest_auth.registration.urls'))  # 変更
 ]
