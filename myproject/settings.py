@@ -70,7 +70,7 @@ MIDDLEWARE = [
 
 CORS_ALLOWED_ORIGINS = [
     "https://heroku-test-note01-react-cd37f44c3ea0.herokuapp.com",
-    "http://memo.shinnichijo.com",
+    "http://note.shinnichijo.com",
 ]
 
 LOGGING = {
